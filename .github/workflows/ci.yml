@@ -1,1 +1,39 @@
+name: C# CI
+
+on:
+  pull_request:
+    paths:
+      - 'exercices/exercice1/Program.cs'  # Fichier à tester
+    branches:
+      - main  # Branche sur laquelle les PR sont ouvertes
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '6.0'  # Utiliser la version souhaitée de .NET
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build the project
+      run: dotnet build --configuration Release
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --results-directory ./test-results
+
+    - name: Add comment to PR with results
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          ### Résultats des tests
+          $(cat ./test-results/TestResults.xml)
 
